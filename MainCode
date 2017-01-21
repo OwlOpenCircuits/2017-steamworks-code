@@ -16,7 +16,7 @@ import edu.wpi.first.wpilibj.DigitalInput;
  * creating this project, you must also update the manifest file in the resource
  * directory.
  */
-//defining the varriables that exist inside the class robot
+//defining the variables that exist inside the class robot
 public class Robot extends IterativeRobot {
     final String defaultAuto = "Default"; // setting the thing to the thing (Max this requires you to comment on)
     final String customAuto = "My Auto"; 
@@ -47,14 +47,14 @@ public class Robot extends IterativeRobot {
      This function is run when the robot is first started up and should be
      used for any initialization code.
      */
-    public void robotInit() { // initializing of the other things in the robit
+    public void robotInit() { // initializing of the other things in the robot
         chassis.setInvertedMotor(RobotDrive.MotorType.kFrontLeft, true); // inverting the direction of the motors so the robot can actually drive (thanks Obama)
         chassis.setInvertedMotor(RobotDrive.MotorType.kRearLeft, true);
         chassis.setInvertedMotor(RobotDrive.MotorType.kFrontRight, true);
         chassis.setInvertedMotor(RobotDrive.MotorType.kRearRight, true);
         server = CameraServer.getInstance();
-        server.setQuality(50);
-        server.startAutomaticCapture("cam0");
+        //server.setQuality(50);
+        //server.startAutomaticCapture("cam0");
         chassis.setSafetyEnabled(true); // watchdog program so that it can shut down if necessary (?)
         // Timer timer = new Timer();
     }	
@@ -123,10 +123,12 @@ public class Robot extends IterativeRobot {
 
 			
 		if(Math.abs(driveStick.getRawAxis(4)) > .2) { // driving with the right joystick on the Xbox controller
-			chassis.arcadeDrive(0, driveStick.getRawAxis(4) / 2); // right joystick on Xbox, for spinning. first value is 0 because we don't use this one to move, second value gets the spin
+			double turn = driveStick.getRawAxis(4);
+			chassis.arcadeDrive(0, turn/ 2); // right joystick on Xbox, for spinning. first value is 0 because we don't use this one to move, second value gets the spin
 		}
     }
-    
+    }
+    	
     /**
      * This function is called periodically during test mode
      */
