@@ -6,6 +6,7 @@ import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.RobotDrive;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.Spark;
+import edu.wpi.first.wpilibj.Talon;
 import edu.wpi.first.wpilibj.TalonSRX;
 import edu.wpi.first.wpilibj.DigitalInput;
  
@@ -21,26 +22,38 @@ public class Robot extends IterativeRobot {
     final String defaultAuto = "Default"; // setting the thing to the thing (Max this requires you to comment on)
     final String customAuto = "My Auto"; 
     String autoSelected; // variable to select the auto code
-    RobotDrive chassis = new RobotDrive(3, 4, 5, 6); // initializing the driving motors
-    TalonSRX middle = new TalonSRX(7); // middle wheel 
-    Joystick driveStick = new Joystick(0); //initializing the joystick
+    RobotDrive chassis = new RobotDrive(1, 2, 5, 6); // defining the driving motors
+    Talon middle = new Talon(3); // middle wheel 
+    Talon middle_2 = new Talon(4); // other middle wheel 
+    TalonSRX climbing = new TalonSRX(7); // climbing motor 
+    Joystick driveStick = new Joystick(0); //defining  the joystick
 	CameraServer server;
-	DigitalInput limitSwitch = new DigitalInput(7); // Potential limit switch thing for the scaling arm  
+	//DigitalInput limitSwitch = new DigitalInput(7); // Potential limit switch thing for the scaling arm  
+	
 	// map num from range of set 1 to range of set 2
 	private double mapping(double num, double min_1, double max_1,double min_2, double max_2){
 		// create a function for the line connecting the two points 
-		// the point are (min_1, min_2) , (max_1, max_2) 
-		double slope = (min_2 - max_2)/(min_1 - max_1); 
+		// the points are (min_1, min_2) , (max_1, max_2) 
+		double slope = (min_1 - max_1)/(min_2 - max_2 ); 
 		double b = max_2 - (slope * max_1); 
 		double new_num = (slope * num) + b; 
+		System.out.println("num:" + num + " new num:" + new_num);
 		return new_num; 
 		
 	}
+	// method that drives the robot 
 	public void drive_robot (double vertical, double horizontal, double power) { 
-		vertical = mapping(vertical,0,1,-power,power); 
-		horizontal = mapping(horizontal,0,1,-power,power);
-		chassis.drive(vertical, 0);
-		middle.set(horizontal);
+		System.out.println("vertical:"+ vertical + " Horizontal:" + horizontal);
+		//maps from range of the joystick to the range of the motor power
+		//vertical = mapping(vertical,-1,1,-power,power); 
+		//horizontal = mapping(horizontal,-1,1,-power,power);
+		// actually drives the robot 
+		chassis.drive(vertical/2, 0);
+		middle.set(horizontal/3);
+		middle_2.set(horizontal/3);
+		Timer.delay(0.1);
+		middle.set(0);
+		middle_2.set(0);
 	}
 		
 	  /*
@@ -73,15 +86,22 @@ public class Robot extends IterativeRobot {
 	 */
     public void autonomousInit() {
     	Timer timer = new Timer();
-    	int autoChooser = 2;
+    	int autoChooser = 0;
     	if (autoChooser == 0) { // place for the first autonomous code 
-    		
+    		System.out.println("Autonomous 1");
+    		middle.set(0.5);
+    		middle_2.set(0.5);
+    		Timer.delay(0.5);
+    		middle.set(0);
+    		middle_2.set(0);
         }
     	
     	if (autoChooser == 1) { // place for the second autonomous code
+    		System.out.println("Autonomous 2");
     		
     	}
     	if (autoChooser == 2) { // place for third autonomous code
+    		System.out.println("Autonomous 3");
     		
 			}
         
@@ -102,38 +122,38 @@ public class Robot extends IterativeRobot {
      */
     public void teleopPeriodic() { // teleop code
     	if(driveStick.getRawButton(7) == false) { // emergency stop coded into all teleop functions
-    	//Drive at an angle 
-    	if(Math.abs(driveStick.getRawAxis(0)) > .2 || (Math.abs(driveStick.getRawAxis(1)) > .2)) { //if left joystick is being moved 
-			// get raw axis 0-1 0 is left/right 1 is up/down
-    		System.out.println("Drive with left joy stick");
-    		double vertical = driveStick.getRawAxis(1); // get the joystick value for the up/down control
-    		double horizontal = driveStick.getRawAxis(0); // get the joystick value for the left/right control 
-    		System.out.println(vertical + " " + horizontal);
-			drive_robot(vertical, horizontal,0.5);// drive the robot 
-		}
-    	
-    	if(Math.abs(driveStick.getRawAxis(2)) > .2 || (Math.abs(driveStick.getRawAxis(3)) > .2)) { //driving with Arrows on the Xbox controller
-    		// get raw axis 0-1 0 is left/right 1 is up/down
-    		System.out.println("Drive with fine tuners joy stick");
-    		double vertical = driveStick.getRawAxis(3); // get the joystick value for the up/down control
-    		double horizontal = driveStick.getRawAxis(2); // get the joystick value for the left/right control 
-    		System.out.println(vertical + " " + horizontal);
-			drive_robot(vertical, horizontal,0.25);// drive the robot 
-		}
-
-			
-		if(Math.abs(driveStick.getRawAxis(4)) > .2) { // driving with the right joystick on the Xbox controller
-			double turn = driveStick.getRawAxis(4);
-			chassis.arcadeDrive(0, turn/ 2); // right joystick on Xbox, for spinning. first value is 0 because we don't use this one to move, second value gets the spin
-		}
-    }
+	    	//Drive at an angle 
+	    	if(Math.abs(driveStick.getRawAxis(0)) > .2 || (Math.abs(driveStick.getRawAxis(1)) > .2)) { //if left joystick is being moved 
+				// get raw axis 0-1 for left joystick 0 is left/right 1 is up/down
+	    		System.out.println("Drive with left joy stick");
+	    		double vertical = driveStick.getRawAxis(1); // get the joystick value for the up/down control
+	    		double horizontal = driveStick.getRawAxis(0); // get the joystick value for the left/right control 
+				drive_robot(vertical, horizontal,0.5);// drive the robot
+				
+			}
+	    	
+	    	if(Math.abs(driveStick.getRawAxis(2)) > .2 || (Math.abs(driveStick.getRawAxis(3)) > .2)) { //driving with Arrows on the Xbox controller
+	    		// get raw axis for fine tuning arrows 2 is left/right 3 is up/down
+	    		System.out.println("Drive with fine tuners joy stick");
+	    		double vertical = driveStick.getRawAxis(3); // get the joystick value for the up/down control
+	    		double horizontal = driveStick.getRawAxis(2); // get the joystick value for the left/right control 
+	    		drive_robot(vertical, horizontal,0.25);// drive the robot 
+	    		
+			}
+	
+				
+			if(Math.abs(driveStick.getRawAxis(4)) > .2 || (Math.abs(driveStick.getRawAxis(5)) > .2)) { // driving with the right joystick on the Xbox controller
+				//double turn = driveStick.getRawAxis(4);
+				chassis.arcadeDrive(driveStick.getRawAxis(5)/1.5, driveStick.getRawAxis(4)/1.5); // right joystick on Xbox, for spinning. first value is 0 because we don't use this one to move, second value gets the spin
+			}
+    	}
     }
     	
     /**
      * This function is called periodically during test mode
      */
     public void testPeriodic() {
-    
+    	System.out.println("In testing mode");
     }
     
 }
