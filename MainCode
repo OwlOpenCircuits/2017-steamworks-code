@@ -42,29 +42,31 @@ public class Robot extends IterativeRobot {
 		
 	}
 	// method that drives the robot 
-	public void drive_robot (double vertical, double horizontal, double power) { 
+	public void drive_robot (double vertical, double horizontal, double turn) { 
 		System.out.println("vertical:"+ vertical + " Horizontal:" + horizontal);
 		//maps from range of the joystick to the range of the motor power
 		//vertical = mapping(vertical,-1,1,-power,power); 
 		//horizontal = mapping(horizontal,-1,1,-power,power);
 		// actually drives the robot 
-		chassis.drive(vertical/2, 0);
-		middle.set(horizontal/3);
-		middle_2.set(horizontal/3);
+		chassis.drive(vertical/2, turn/2);
+		middle.set(-horizontal/3);
+		middle_2.set(-horizontal/3);
 		Timer.delay(0.1);
 		middle.set(0);
 		middle_2.set(0);
 	}
+	public void climb_robot(double power){
+		climbing.set(power);
+		Timer.delay(0.1);
+		climbing.set(0);
+	}
+		
 		
 	  /*
      This function is run when the robot is first started up and should be
      used for any initialization code.
      */
     public void robotInit() { // initializing of the other things in the robot
-        chassis.setInvertedMotor(RobotDrive.MotorType.kFrontLeft, true); // inverting the direction of the motors so the robot can actually drive (thanks Obama)
-        chassis.setInvertedMotor(RobotDrive.MotorType.kRearLeft, true);
-        chassis.setInvertedMotor(RobotDrive.MotorType.kFrontRight, true);
-        chassis.setInvertedMotor(RobotDrive.MotorType.kRearRight, true);
         server = CameraServer.getInstance();
         //server.setQuality(50);
         //server.startAutomaticCapture("cam0");
@@ -128,7 +130,8 @@ public class Robot extends IterativeRobot {
 	    		System.out.println("Drive with left joy stick");
 	    		double vertical = driveStick.getRawAxis(1); // get the joystick value for the up/down control
 	    		double horizontal = driveStick.getRawAxis(0); // get the joystick value for the left/right control 
-				drive_robot(vertical, horizontal,0.5);// drive the robot
+	    		double turn = driveStick.getRawAxis(4);
+	    		drive_robot(vertical, horizontal,turn);// drive the robot
 				
 			}
 	    	
@@ -142,9 +145,16 @@ public class Robot extends IterativeRobot {
 			}
 	
 				
-			if(Math.abs(driveStick.getRawAxis(4)) > .2 || (Math.abs(driveStick.getRawAxis(5)) > .2)) { // driving with the right joystick on the Xbox controller
-				//double turn = driveStick.getRawAxis(4);
-				chassis.arcadeDrive(driveStick.getRawAxis(5)/1.5, driveStick.getRawAxis(4)/1.5); // right joystick on Xbox, for spinning. first value is 0 because we don't use this one to move, second value gets the spin
+			if(Math.abs(driveStick.getRawAxis(4)) > .2) { // driving with the right joystick on the Xbox controller
+				double turn = driveStick.getRawAxis(4);
+				chassis.arcadeDrive(0, turn/2); // right joystick on Xbox, for spinning. first value is 0 because we don't use this one to move, second value gets the spin
+			}
+			
+			if(driveStick.getRawButton(8)== true){
+				climb_robot(0.5);
+			}
+			if(driveStick.getRawButton(4)== true){
+				climb_robot(-0.5);
 			}
     	}
     }
