@@ -23,10 +23,14 @@ public class Robot extends IterativeRobot {
     final String customAuto = "My Auto"; 
     String autoSelected; // variable to select the auto code
     RobotDrive chassis = new RobotDrive(1, 2, 5, 6); // defining the driving motors
+    Spark frntleft = new Spark(1);
+    Spark frntrght = new Spark(2); 
+    Spark bcklft = new Spark(5); 
+    Spark bckrght = new Spark(6);
     Talon middle = new Talon(3); // middle wheel 
     Talon middle_2 = new Talon(4); // other middle wheel 
     TalonSRX climbing = new TalonSRX(7); // climbing motor 
-    Joystick driveStick = new Joystick(0); //defining  the joystick
+    Joystick driveStick = new Joystick(0); //defining the joystick
 	CameraServer server;
 	//DigitalInput limitSwitch = new DigitalInput(7); // Potential limit switch thing for the scaling arm  
 	
@@ -49,8 +53,8 @@ public class Robot extends IterativeRobot {
 		//horizontal = mapping(horizontal,-1,1,-power,power);
 		// actually drives the robot 
 		chassis.drive(vertical/2, turn/2);
-		middle.set(-horizontal/3);
-		middle_2.set(-horizontal/3);
+		middle.set(horizontal/3);
+		middle_2.set(horizontal/3);
 		Timer.delay(0.1);
 		middle.set(0);
 		middle_2.set(0);
@@ -87,15 +91,13 @@ public class Robot extends IterativeRobot {
 	 * If using the SendableChooser make sure to add them to the chooser code above as well.
 	 */
     public void autonomousInit() {
-    	Timer timer = new Timer();
+    	//Timer timer = new Timer();
     	int autoChooser = 0;
     	if (autoChooser == 0) { // place for the first autonomous code 
     		System.out.println("Autonomous 1");
-    		middle.set(0.5);
-    		middle_2.set(0.5);
+    		chassis.drive(0.5, 0);
     		Timer.delay(0.5);
-    		middle.set(0);
-    		middle_2.set(0);
+    		chassis.drive(0, 0);
         }
     	
     	if (autoChooser == 1) { // place for the second autonomous code
@@ -134,15 +136,6 @@ public class Robot extends IterativeRobot {
 	    		drive_robot(vertical, horizontal,turn);// drive the robot
 				
 			}
-	    	
-	    	if(Math.abs(driveStick.getRawAxis(2)) > .2 || (Math.abs(driveStick.getRawAxis(3)) > .2)) { //driving with Arrows on the Xbox controller
-	    		// get raw axis for fine tuning arrows 2 is left/right 3 is up/down
-	    		System.out.println("Drive with fine tuners joy stick");
-	    		double vertical = driveStick.getRawAxis(3); // get the joystick value for the up/down control
-	    		double horizontal = driveStick.getRawAxis(2); // get the joystick value for the left/right control 
-	    		drive_robot(vertical, horizontal,0.25);// drive the robot 
-	    		
-			}
 	
 				
 			if(Math.abs(driveStick.getRawAxis(4)) > .2) { // driving with the right joystick on the Xbox controller
@@ -155,6 +148,30 @@ public class Robot extends IterativeRobot {
 			}
 			if(driveStick.getRawButton(4)== true){
 				climb_robot(-0.5);
+			}
+			if(driveStick.getRawButton(4)== true){ // find Y button 
+				chassis.drive(0.5, 0);
+	    		Timer.delay(0.5);
+	    		chassis.drive(0, 0);
+			}
+			if(driveStick.getRawButton(4)== true){// find B button 
+				middle.set(0.5);
+				middle_2.set(0.5);
+				Timer.delay(0.5);
+				middle.set(0);
+				middle_2.set(0);
+			}
+			if(driveStick.getRawButton(4)== true){// find A button
+				chassis.drive(0.5, 0);
+	    		Timer.delay(0.5);
+	    		chassis.drive(0, 0);
+			}
+			if(driveStick.getRawButton(4)== true){ // find X button 
+				middle.set(-0.5);
+				middle_2.set(-0.5);
+				Timer.delay(0.5);
+				middle.set(0);
+				middle_2.set(0);
 			}
     	}
     }
