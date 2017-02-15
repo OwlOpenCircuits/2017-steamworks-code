@@ -1,15 +1,14 @@
 package org.usfirst.frc.team5271.robot;
 
-import edu.wpi.first.wpilibj.IterativeRobot; // all the imports, all the time
-import edu.wpi.first.wpilibj.CameraServer;
+import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.Joystick;
-import edu.wpi.first.wpilibj.RobotDrive;
-import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.Spark;
 import edu.wpi.first.wpilibj.Talon;
 import edu.wpi.first.wpilibj.TalonSRX;
-import edu.wpi.first.wpilibj.DigitalInput;
- 
+import edu.wpi.first.wpilibj.Timer; 
+
 /**
  * The VM is configured to automatically run this class, and to call the
  * functions corresponding to each mode, as described in the IterativeRobot
@@ -17,117 +16,132 @@ import edu.wpi.first.wpilibj.DigitalInput;
  * creating this project, you must also update the manifest file in the resource
  * directory.
  */
-//defining the variables that exist inside the class robot
 public class Robot extends IterativeRobot {
-    final String defaultAuto = "Default"; // setting the thing to the thing (Max this requires you to comment on)
-    final String customAuto = "My Auto"; 
-    String autoSelected; // variable to select the auto code
-    RobotDrive chassis = new RobotDrive(1, 2, 5, 6); // defining the driving motors
-    Spark frntleft = new Spark(1);
-    Spark frntrght = new Spark(2); 
-    Spark bcklft = new Spark(5); 
-    Spark bckrght = new Spark(6);
+	final String defaultAuto = "Default";
+	final String customAuto = "My Auto";
+	String autoSelected;
+	SendableChooser<String> chooser = new SendableChooser<>();
+	Spark frntrght = new Spark(1);
+	Spark bckrght = new Spark(2); 
+    Spark frntlft = new Spark(5); 
+    Spark bcklft = new Spark(6);
     Talon middle = new Talon(3); // middle wheel 
     Talon middle_2 = new Talon(4); // other middle wheel 
     TalonSRX climbing = new TalonSRX(7); // climbing motor 
     Joystick driveStick = new Joystick(0); //defining the joystick
-	CameraServer server;
-	//DigitalInput limitSwitch = new DigitalInput(7); // Potential limit switch thing for the scaling arm  
-	
-	// map num from range of set 1 to range of set 2
-	private double mapping(double num, double min_1, double max_1,double min_2, double max_2){
-		// create a function for the line connecting the two points 
-		// the points are (min_1, min_2) , (max_1, max_2) 
-		double slope = (min_1 - max_1)/(min_2 - max_2 ); 
-		double b = max_2 - (slope * max_1); 
-		double new_num = (slope * num) + b; 
-		System.out.println("num:" + num + " new num:" + new_num);
-		return new_num; 
-		
-	}
-	// method that drives the robot 
-	public void drive_robot (double vertical, double horizontal, double turn) { 
+    
+    public void chassis_drive (double power, double time){
+    	frntlft.set(-power);
+		frntrght.set(power);
+		bcklft.set(-power);
+		bckrght.set(power);
+		Timer.delay(time);
+		frntlft.set(0);
+		frntrght.set(0);
+		bcklft.set(0);
+		bckrght.set(0);
+    }
+    
+    public void drive_robot (double vertical, double horizontal, double turn) { 
 		System.out.println("vertical:"+ vertical + " Horizontal:" + horizontal);
 		//maps from range of the joystick to the range of the motor power
 		//vertical = mapping(vertical,-1,1,-power,power); 
 		//horizontal = mapping(horizontal,-1,1,-power,power);
 		// actually drives the robot 
-		chassis.drive(vertical/2, turn/2);
-		middle.set(horizontal/3);
-		middle_2.set(horizontal/3);
+		frntlft.set(-vertical/2);
+		frntrght.set(vertical/2);
+		bcklft.set(-vertical/2);
+		bckrght.set(vertical/2);
+		middle.set(-horizontal/3);
+		middle_2.set(-horizontal/3);
 		Timer.delay(0.1);
 		middle.set(0);
 		middle_2.set(0);
-	}
-	public void climb_robot(double power){
+		frntlft.set(0);
+		frntrght.set(0);
+		bcklft.set(0);
+		bckrght.set(0);
+    }
+    
+    public void turning(double turn){
+    	frntlft.set(turn/2);
+		frntrght.set(turn/2);
+		bcklft.set(turn/2);
+		bckrght.set(turn/2);
+		Timer.delay(0.1);
+		frntlft.set(0);
+		frntrght.set(0);
+		bcklft.set(0);
+		bckrght.set(0);
+    }
+    public void climb_robot(double power){
 		climbing.set(power);
 		Timer.delay(0.1);
 		climbing.set(0);
 	}
-		
-		
-	  /*
-     This function is run when the robot is first started up and should be
-     used for any initialization code.
-     */
-    public void robotInit() { // initializing of the other things in the robot
-        server = CameraServer.getInstance();
-        //server.setQuality(50);
-        //server.startAutomaticCapture("cam0");
-        chassis.setSafetyEnabled(true); // watchdog program so that it can shut down if necessary (?)
-        // Timer timer = new Timer();
-    }	
-	
-	
-  
-        
 	/**
-	 * This autonomous (along with the chooser code above) shows how to select between different autonomous modes
-	 * using the dashboard. The sendable chooser code works with the Java SmartDashboard. If you prefer the LabVIEW
-	 * Dashboard, remove all of the chooser code and uncomment the getString line to get the auto name from the text box
-	 * below the Gyro
-	 *
-	 * You can add additional auto modes by adding additional comparisons to the switch structure below with additional strings.
-	 * If using the SendableChooser make sure to add them to the chooser code above as well.
+	 * This function is run when the robot is first started up and should be
+	 * used for any initialization code.
 	 */
-    public void autonomousInit() {
-    	//Timer timer = new Timer();
-    	int autoChooser = 0;
-    	if (autoChooser == 0) { // place for the first autonomous code 
-    		System.out.println("Autonomous 1");
-    		chassis.drive(0.5, 0);
-    		Timer.delay(0.5);
-    		chassis.drive(0, 0);
-        }
-    	
-    	if (autoChooser == 1) { // place for the second autonomous code
-    		System.out.println("Autonomous 2");
-    		
-    	}
-    	if (autoChooser == 2) { // place for third autonomous code
-    		System.out.println("Autonomous 3");
-    		
-			}
-        
-    }
+	@Override
+	public void robotInit() {
+		chooser.addDefault("Default Auto", defaultAuto);
+		chooser.addObject("My Auto", customAuto);
+		SmartDashboard.putData("Auto choices", chooser);
+	}
 
-    /**
-     * This function is called periodically during autonomous
-     */
-    public void autonomousPeriodic() {
+	/**
+	 * This autonomous (along with the chooser code above) shows how to select
+	 * between different autonomous modes using the dashboard. The sendable
+	 * chooser code works with the Java SmartDashboard. If you prefer the
+	 * LabVIEW Dashboard, remove all of the chooser code and uncomment the
+	 * getString line to get the auto name from the text box below the Gyro
+	 *
+	 * You can add additional auto modes by adding additional comparisons to the
+	 * switch structure below with additional strings. If using the
+	 * SendableChooser make sure to add them to the chooser code above as well.
+	 */
+	@Override
+	public void autonomousInit() {
+		autoSelected = chooser.getSelected();
+		// autoSelected = SmartDashboard.getString("Auto Selector",
+		// defaultAuto);
+		System.out.println("Auto selected: " + autoSelected);
+		frntlft.set(-0.5);
+		frntrght.set(0.5);
+		bcklft.set(-0.5);
+		bckrght.set(0.5);
+		Timer.delay(0.5);
+		frntlft.set(0);
+		frntrght.set(0);
+		bcklft.set(0);
+		bckrght.set(0);
+	}
 
-    	
-    	}
+	/**
+	 * This function is called periodically during autonomous
+	 */
+	@Override
+	public void autonomousPeriodic() {
+		switch (autoSelected) {
+		case customAuto:
+			// Put custom auto code here
+			break;
+		case defaultAuto:
+		default:
+			// Put default auto code here
+			break;
+		}
+	}
 
-    
-
-    /**
-     * This function is called periodically during operator control
-     */
-    public void teleopPeriodic() { // teleop code
-    	if(driveStick.getRawButton(7) == false) { // emergency stop coded into all teleop functions
+	/**
+	 * This function is called periodically during operator control
+	 */
+	@Override
+	public void teleopPeriodic() {
+		if(driveStick.getRawButton(7) == false) { // emergency stop coded into all teleop functions
 	    	//Drive at an angle 
-	    	if(Math.abs(driveStick.getRawAxis(0)) > .2 || (Math.abs(driveStick.getRawAxis(1)) > .2)) { //if left joystick is being moved 
+	    	if(Math.abs(driveStick.getRawAxis(0)) > .1 || (Math.abs(driveStick.getRawAxis(1)) > .1)) { //if left joystick is being moved 
 				// get raw axis 0-1 for left joystick 0 is left/right 1 is up/down
 	    		System.out.println("Drive with left joy stick");
 	    		double vertical = driveStick.getRawAxis(1); // get the joystick value for the up/down control
@@ -140,33 +154,36 @@ public class Robot extends IterativeRobot {
 				
 			if(Math.abs(driveStick.getRawAxis(4)) > .2) { // driving with the right joystick on the Xbox controller
 				double turn = driveStick.getRawAxis(4);
-				chassis.arcadeDrive(0, turn/2); // right joystick on Xbox, for spinning. first value is 0 because we don't use this one to move, second value gets the spin
+				if (turn > 0){
+					turning(1);
+				}
+				else {
+					turning(-1);
+				}
+				//turning(turn);
+				//chassis.arcadeDrive(0, turn/2); // right joystick on Xbox, for spinning. first value is 0 because we don't use this one to move, second value gets the spin
 			}
 			
-			if(driveStick.getRawButton(8)== true){
+			if(driveStick.getRawAxis(3) > 0.5){
 				climb_robot(0.5);
 			}
-			if(driveStick.getRawButton(4)== true){
+			if(driveStick.getRawAxis(2) > 0.5){
 				climb_robot(-0.5);
 			}
-			if(driveStick.getRawButton(4)== true){ // find Y button 
-				chassis.drive(0.5, 0);
-	    		Timer.delay(0.5);
-	    		chassis.drive(0, 0);
+			if(driveStick.getRawButton(3)== true){ // Y button 
+				chassis_drive(0.5,0.5);
 			}
-			if(driveStick.getRawButton(4)== true){// find B button 
+			if(driveStick.getRawButton(1)== true){//B button 
 				middle.set(0.5);
 				middle_2.set(0.5);
 				Timer.delay(0.5);
 				middle.set(0);
 				middle_2.set(0);
 			}
-			if(driveStick.getRawButton(4)== true){// find A button
-				chassis.drive(0.5, 0);
-	    		Timer.delay(0.5);
-	    		chassis.drive(0, 0);
+			if(driveStick.getRawButton(0)== true){// A button
+				chassis_drive(-0.5,0.5);
 			}
-			if(driveStick.getRawButton(4)== true){ // find X button 
+			if(driveStick.getRawButton(2)== true){ // X button 
 				middle.set(-0.5);
 				middle_2.set(-0.5);
 				Timer.delay(0.5);
@@ -174,13 +191,13 @@ public class Robot extends IterativeRobot {
 				middle_2.set(0);
 			}
     	}
-    }
-    	
-    /**
-     * This function is called periodically during test mode
-     */
-    public void testPeriodic() {
-    	System.out.println("In testing mode");
-    }
-    
+	}
+
+	/**
+	 * This function is called periodically during test mode
+	 */
+	@Override
+	public void testPeriodic() {
+	}
 }
+
